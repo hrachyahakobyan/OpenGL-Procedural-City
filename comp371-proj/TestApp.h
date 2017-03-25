@@ -26,11 +26,14 @@ protected:
 	void render();
 	void updateMovement();
 	void makeStreets();
-	std::unique_ptr<glutil::Shader> shader;
+	std::shared_ptr<glutil::Shader> shader;
 	std::shared_ptr<glutil::Model> ground;
 	std::vector<std::shared_ptr<glutil::Model>> streets;
 	std::vector<std::shared_ptr<glutil::Model>> buildings;
+	std::shared_ptr<glutil::Skybox> skybox;
 	std::vector<Area> areas;
 	std::vector<std::vector<ObjectType>> map;
+	glm::mat4 view;
+	glm::mat4 proj;
 };
 

@@ -24,13 +24,22 @@ void TestApp::initialize()
 	glutil::ApplicationBase::initialize();
 	glCullFace(GL_BACK);
 	backgroundColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	shader.reset(new glutil::Shader("shaders/vertex.txt", "shaders/fragment.txt"));
+	shader = glutil::Shader::fromFile("shaders/vertex.txt", "shaders/fragment.txt");
 	camera.reset(new glutil::Camera(glm::vec3(0.0f, 30.f, 3.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, -1.0f)));
 	camera->setMovementSpeed(10.f);
 	ground = Ground::make(glm::vec3{ 0.0f, -0.1f, 0.0f }, 128, 128);
-	makeStreets();
+	std::vector<std::string> faces{
+		"right.jpg",
+		"left.jpg",
+		"top.jpg",
+		"bottom.jpg",
+		"back.jpg",
+		"front.jpg"
+	};
+	skybox = glutil::Skybox::make("textures\\skybox", faces);
+	//makeStreets();
 }
 
 void TestApp::makeStreets()
@@ -102,9 +111,9 @@ void TestApp::updateData()
 	// Camera/View transformation
 	updateMovement();
 	shader->use();
-	glm::mat4 view = camera->view();
+	view = camera->view();
 	// Projection 
-	glm::mat4 projection = glm::perspective(camera->getZoom(), (GLfloat)windowHandler->getWindowWidth() / (GLfloat)windowHandler->getWindowHeight(), 0.1f, 75.0f);
+	proj = glm::perspective(camera->getZoom(), (GLfloat)windowHandler->getWindowWidth() / (GLfloat)windowHandler->getWindowHeight(), 0.1f, 75.0f);
 	// Get the uniform locations
 	GLint modelLoc = glGetUniformLocation(shader->getProgram(), "model");
 	GLint viewLoc = glGetUniformLocation(shader->getProgram(), "view");
@@ -112,7 +121,7 @@ void TestApp::updateData()
 	glm::mat4 model;
 	glUniformMatrix4fv(glGetUniformLocation(shader->getProgram(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 void TestApp::render()
@@ -126,6 +135,9 @@ void TestApp::render()
 	}
 	for (const auto& bld : buildings){
 		bld->draw(*(shader.get()));
+	}
+	if (skybox){
+		skybox->draw(view, proj);
 	}
 }
 
