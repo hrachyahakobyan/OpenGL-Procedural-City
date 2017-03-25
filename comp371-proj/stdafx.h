@@ -9,7 +9,8 @@
 
 #include <stdio.h>
 #include <tchar.h>
-
-
+#include <memory>
+#include <glm\glm.hpp>
+#include <OpenGLUtil\OpenGLUtil.hpp>
 
 // TODO: reference additional headers your program requires here

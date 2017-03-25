@@ -2,10 +2,13 @@
 //
 
 #include "stdafx.h"
-
+#include "TestApp.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	TestApp app("TEST");
+	app.initialize();
+	app.run();
 	return 0;
 }
 
