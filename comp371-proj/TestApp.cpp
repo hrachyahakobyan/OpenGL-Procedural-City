@@ -39,7 +39,7 @@ void TestApp::initialize()
 		"front.jpg"
 	};
 	skybox = glutil::Skybox::make("textures\\skybox", faces);
-	//makeStreets();
+	makeStreets();
 }
 
 void TestApp::makeStreets()
@@ -49,11 +49,11 @@ void TestApp::makeStreets()
 	std::vector<std::pair<int, int>> verticalStreets;
 	int left = worldWidth;
 	while (left > 0){
-		int skip = 5 + Random::random(0, 10);
+		int skip = 5 + Random::random(0, 7);
 		if (left < skip)
 			break;
 		left -= skip;
-		int streetWidth = 1 + std::max(0, Random::normal(3, 5));
+		int streetWidth = 1 + std::max(0, Random::normal(0, 5));
 		if (left < streetWidth)
 			break;
 		streets.push_back(Ground::makeStreet(glm::vec3{ worldWidth - left, 0.0f, 0 }, Vertical, streetWidth, worldHeight));
@@ -65,11 +65,11 @@ void TestApp::makeStreets()
 	std::vector<std::pair<int, int>> horizontalStreets;
 	left = worldHeight;
 	while (left > 0){
-		int skip = 10 + Random::random(0, 20);
+		int skip = 5 + Random::random(0, 7);
 		if (left < skip)
 			break;
 		left -= skip;
-		int streetWidth = 1 + std::max(0, Random::random(3, 5));
+		int streetWidth = 1 + std::max(0, Random::normal(0, 5));
 		if (left < streetWidth)
 			break;
 		streets.push_back(Ground::makeStreet(glm::vec3{ 0, 0.0f, -worldHeight +left }, Horizontal, streetWidth, worldWidth));
@@ -94,15 +94,16 @@ void TestApp::makeStreets()
 		}
 		zoffset = horizontalStreets[i].second;
 	}
-
-	int max = 30;
+	int max = 100;
 	for (const auto& area : areas){
 		max--;
 		if (max == 0) return;
 		int height = 10 + Random::normal(10, 
 			5);
-		BuildingType type = static_cast<BuildingType>(Random::random(0, 1));
-		buildings.push_back(Building::make(type, area.bottomleft, area.xWidth, area.zWidth, height));
+		BuildingType type = static_cast<BuildingType>(Random::random(0, 2));
+		auto bld = Building::make(type, area.bottomleft, area.xWidth, area.zWidth, height);
+		if (bld) 
+			buildings.push_back(bld);
 	}
 }
 

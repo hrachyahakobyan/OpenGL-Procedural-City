@@ -16,9 +16,17 @@ std::shared_ptr<glutil::Texture> Textures::randomFacade()
 	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }
 
-std::shared_ptr<glutil::Texture> Textures::randomFloor()
+std::shared_ptr<glutil::Texture> Textures::randomGround()
 {
-	int f = Random::random(1, floors);
-	std::string name = "textures\\floor" + std::to_string(f) + ".jpg";
+	int f = Random::random(1, grounds);
+	std::string name = "textures\\ground" + std::to_string(f) + ".jpg";
+	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
+}
+
+
+std::shared_ptr<glutil::Texture> Textures::randomRoof()
+{
+	int f = Random::random(1, roofs);
+	std::string name = "textures\\roofs" + std::to_string(f) + ".jpg";
 	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }

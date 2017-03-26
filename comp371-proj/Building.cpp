@@ -10,12 +10,15 @@ std::shared_ptr<glutil::Model> Building::make(BuildingType type, const glm::vec3
 		return makeClassical(topleft, xWidth, zWidth, height);
 	case Blocky:
 		return makeBlocky(topleft, xWidth, zWidth, height);
+	case Tower:
+		return makeTower(topleft, xWidth, zWidth, height);
 	}
 	return nullptr;
 }
 
 std::shared_ptr<glutil::Model> Building::makeClassical(const glm::vec3& topleft, int xWidth, int zWidth, int height)
 {
+	if (xWidth < 2 || zWidth < 2) return nullptr;
 	using namespace glutil;
 	int tier_frac = 2 + Random::random(0, 3);
 	int narrow_interval = 1 + Random::random(0, 1);
@@ -83,6 +86,7 @@ std::shared_ptr<glutil::Model> Building::makeClassical(const glm::vec3& topleft,
 
 std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, int xWidth, int zWidth, int height)
 {
+	if (xWidth < 2 || zWidth < 2) return nullptr;
 	using namespace glutil;
 	int left, right, front, back;
 	int max_left, max_right, max_front, max_back;
@@ -90,10 +94,7 @@ std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, in
 	int tiers, max_tiers;
 	bool skip;
 	int min_height;
-	int roofHeight;
-	glm::vec3 roofTopleft;
-	int roofxWidth;
-	int roofzWidth;
+	int foundation = 2;
 
 	mid_x = topleft.x + xWidth / 2;
 	mid_z = topleft.z + zWidth / 2;
@@ -107,10 +108,16 @@ std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, in
 	std::vector<GLuint> indices;
 	std::vector<Vertex> roofVertices;
 	std::vector<GLuint> roofIndices;
-	std::vector<Vertex> groundVertices;
-	std::vector<GLuint> groundIndices;
+
+	Mesh::rectangle(topleft, xWidth, zWidth, 1.0f, 1.0f, foundation, false, false, vertices, indices);
+	Mesh::grid2D(glm::vec3{ topleft.x, foundation, topleft.z + zWidth}, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, roofVertices, roofIndices);
+	height -= foundation;
+
+	int roofHeight = height;
+	glm::vec3 roofTopleft = topleft;
+	int roofxWidth = xWidth;
+	int roofzWidth = zWidth;
 	
-	Mesh::grid2D(glm::vec3{topleft.x, topleft.y, topleft.z + zWidth}, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, groundVertices, groundIndices);
 	while (true){
 		if (height < min_height)
 			break;
@@ -150,12 +157,90 @@ std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, in
 	std::vector<Mesh> meshes;
 	meshes.reserve(3);
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
-	meshes.push_back(Mesh(std::move(groundVertices), std::move(groundIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
 	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFacade()}));
 	std::shared_ptr<Model> model(new Model(std::move(meshes)));
 	constructRoof(*model.get(), Blocky, roofTopleft, roofHeight, roofxWidth, roofzWidth);
 	return model;
 }
+
+std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int xWidth, int zWidth, int height)
+{
+	if (xWidth < 2 || zWidth < 2) return nullptr;
+	using namespace glutil;
+	int spans = 3 + Random::random(0, 8);
+	float narrowScale = 0.2f;
+	int max_tiers = 1 + height / 5 + height / 10 + height / 20;
+	int tiers = 0;
+	int tier_frac = 2 + Random::random(0, 3);
+	int height_left = height;
+	int tier_height = 0;
+	float minEllipseArea = glm::pi<float>() * 2.0;
+	bool isSimmetric = Random::random(0, 1);
+
+	float xCenter = topleft.x + xWidth / 2.0;
+	float zCenter = topleft.z + zWidth / 2.0;
+	float step = glm::pi<float>() * 2.0 / spans;
+
+	int xRadius = xWidth / 2.0;
+	int zRadius = zWidth / 2.0;
+	int bottom = 0;
+	float angleStart = 0.0f;
+
+	std::vector<Vertex> vertices;
+	std::vector<GLuint> indices;
+	std::vector<Vertex> roofVertices;
+	std::vector<GLuint> roofIndices;
+	std::vector<Vertex> groundVertices;
+	std::vector<GLuint> groundIndices;
+
+	Mesh::grid2D(glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, groundVertices, groundIndices);
+	while (true){
+		if (tiers >= max_tiers)
+			break;
+		if (height_left <= 0)
+			break;
+		if (glm::pi<float>() * zRadius * xRadius < minEllipseArea)
+			break;
+		tier_height = std::max(height_left / tier_frac, 2);
+		if (height_left < 7)
+			tier_height = height_left;
+		float angle = (isSimmetric ? 0.0f : angleStart);
+		angleStart += step;
+		std::vector<glm::vec3> pos(spans);
+		for (std::size_t i = 0; i < spans; i++){
+			float xCoord = xRadius * glm::cos(angle) + xCenter;
+			float zCoord = zRadius * glm::sin(angle) + zCenter;
+			pos[i] = glm::vec3{ xCoord, bottom, zCoord };
+			angle = glm::mod((angle + step), 360.0f);
+		}
+		glm::vec3 d2{ 0.0f, 1.0f, 0.0f };
+		for (std::size_t i = 0; i < spans; i++){
+			glm::vec3 prev = pos[i];
+			glm::vec3 next = pos[(i + 1) % spans];
+			glm::vec3 bottomleft = prev;
+			float distance = glm::distance(next, prev);
+			glm::vec3 d1 = glm::normalize(next - prev);
+			std::size_t windowCount = std::ceil(glm::distance(next, prev));
+			d1 = d1 * (distance / windowCount);
+			Mesh::grid2D(prev, d1, d2, glm::cross(d1, d2), windowCount, tier_height, vertices, indices);
+		}
+		height_left -= tier_height;
+		bottom += tier_height;
+		tiers++;
+		xRadius = xRadius - xRadius * narrowScale;
+		zRadius = zRadius - zRadius * narrowScale;
+		triangulatePolygon(pos, roofVertices, roofIndices, bottom);
+	}
+	
+	std::vector<Mesh> meshes;
+	meshes.reserve(2);
+	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
+	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
+	meshes.push_back(Mesh(std::move(groundVertices), std::move(groundIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
+	return std::shared_ptr<Model>(new Model(std::move(meshes)));
+}
+
+
 
 void Building::constructRoof(glutil::Model& building, BuildingType type, const glm::vec3& topleft, int height, int xWidth, int zWidth)
 {
@@ -164,4 +249,29 @@ void Building::constructRoof(glutil::Model& building, BuildingType type, const g
 	std::vector<GLuint> indices;
 	Mesh::grid2D(glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, vertices, indices);
 	building.add(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
+}
+
+// Assuming the polygon is in the counterclockwise direction
+void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height)
+{
+	if (points.size() < 3) return;
+	using namespace glutil;
+	std::size_t vertexSizeBefore = vertices.size();
+	// calculate centroid
+	glm::vec3 centroid;
+	int xTex = 0;
+	for (std::size_t i = 0; i < points.size(); i++){
+		vertices.push_back(Vertex(glm::vec3{ points[i].x, height, points[i].z }, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ float(xTex), 0.0f }));
+		centroid += vertices.back().position;
+		xTex = 1 - xTex;
+	}
+	centroid /= (points.size());
+	vertices.push_back(Vertex(centroid, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 0.5f, 1.0f }));
+	int indexCounter = 0;
+	GLuint last = points.size();
+	for (std::size_t i = 0; i < points.size(); i++){
+		indices.push_back(vertexSizeBefore + last);
+		indices.push_back(vertexSizeBefore + i);
+		indices.push_back(vertexSizeBefore + (i + 1) % points.size());
+	}
 }
