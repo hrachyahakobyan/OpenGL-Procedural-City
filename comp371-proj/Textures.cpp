@@ -30,3 +30,8 @@ std::shared_ptr<glutil::Texture> Textures::randomRoof()
 	std::string name = "textures\\roofs" + std::to_string(f) + ".jpg";
 	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }
+
+std::shared_ptr<glutil::Texture> Textures::sidewalk()
+{
+	return glutil::Texture::fromFile("textures\\sidewalk1.jpg", GL_TEXTURE_2D, glutil::Diffusive);
+}

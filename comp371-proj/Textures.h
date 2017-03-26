@@ -6,6 +6,7 @@ public:
 	static std::shared_ptr<glutil::Texture> randomFacade();
 	static std::shared_ptr<glutil::Texture> randomRoof();
 	static std::shared_ptr<glutil::Texture> randomGround();
+	static std::shared_ptr<glutil::Texture> sidewalk();
 private:
 	static const int windows = 17;
 	static const int facades = 5;

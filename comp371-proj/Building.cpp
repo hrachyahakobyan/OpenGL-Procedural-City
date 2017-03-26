@@ -235,8 +235,8 @@ std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int
 	std::vector<Mesh> meshes;
 	meshes.reserve(2);
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
-	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
-	meshes.push_back(Mesh(std::move(groundVertices), std::move(groundIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
+	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
+	meshes.push_back(Mesh(std::move(groundVertices), std::move(groundIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
 	return std::shared_ptr<Model>(new Model(std::move(meshes)));
 }
 
@@ -248,7 +248,7 @@ void Building::constructRoof(glutil::Model& building, BuildingType type, const g
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
 	Mesh::grid2D(glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, vertices, indices);
-	building.add(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomFloor()}));
+	building.add(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
 }
 
 // Assuming the polygon is in the counterclockwise direction
@@ -274,4 +274,33 @@ void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vec
 		indices.push_back(vertexSizeBefore + i);
 		indices.push_back(vertexSizeBefore + (i + 1) % points.size());
 	}
+}
+
+void Building::constructSidewalk(const glm::vec3& topleft, int xWidth, int zWidth, int depth, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices)
+{
+	if (xWidth - 2 < depth || zWidth - 2 < depth)
+		return;
+	// Horizontal strip
+	using namespace glutil;
+	glm::vec3 bottomleft{ topleft.x, topleft.y, topleft.z + depth };
+	glm::vec3 d1{ 1.0f, 0.0f, 0.0f };
+	glm::vec3 d2{ 0.0f, 0.0f, -1.0f };
+	glm::vec3 normal{ 0.0f, 1.0f, 0.0f };
+	Mesh::grid2D(bottomleft, d1, d2, normal, xWidth, depth, vertices, indices);
+	// Rightmost vertical strip
+	bottomleft.x += (xWidth - depth);
+	d1 = glm::vec3{ 0.0f, 0.0f, 1.0f };
+	d2 = glm::vec3{ 1.0f, 0.0f, 0.0f };
+	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
+	// Bottom strip
+	bottomleft = glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth };
+	d1 = glm::vec3{ 1.0f, 0.0f, 0.0f };
+	d2 = glm::vec3{ 0.0f, 0.0f, -1.0f };
+	Mesh::grid2D(bottomleft, d1, d2, normal, xWidth, depth, vertices, indices);
+	// Leftmost vertical strip
+	bottomleft.z -= depth;
+	bottomleft.x += depth;
+	d1 = glm::vec3{ 0.0f, 0.0f, -1.0f };
+	d2 = glm::vec3{ -1.0f, 0.0f, 0.0f };
+	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
 }

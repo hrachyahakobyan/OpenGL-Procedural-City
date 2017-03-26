@@ -3,6 +3,7 @@
 #include "Building.h"
 #include "Ground.h"
 #include "Random.h"
+#include "Textures.h"
 
 TestApp::TestApp(const std::string& windowName) :
 glutil::ApplicationBase(windowName)
@@ -49,14 +50,14 @@ void TestApp::makeStreets()
 	std::vector<std::pair<int, int>> verticalStreets;
 	int left = worldWidth;
 	while (left > 0){
-		int skip = 5 + Random::random(0, 7);
+		int skip = 6 + Random::random(0, 7);
 		if (left < skip)
 			break;
 		left -= skip;
-		int streetWidth = 1 + std::max(0, Random::normal(0, 5));
+		int streetWidth = 1 + std::max(0, Random::normal(0, 4));
 		if (left < streetWidth)
 			break;
-		streets.push_back(Ground::makeStreet(glm::vec3{ worldWidth - left, 0.0f, 0 }, Vertical, streetWidth, worldHeight));
+		streets.push_back(Ground::makeStreet(glm::vec3{ worldWidth - left, 0.0f, 0.0f }, Vertical, streetWidth, worldHeight));
 		verticalStreets.push_back(std::make_pair(worldWidth - left, worldWidth - left + streetWidth));
 		left -= streetWidth;		
 	}
@@ -65,11 +66,11 @@ void TestApp::makeStreets()
 	std::vector<std::pair<int, int>> horizontalStreets;
 	left = worldHeight;
 	while (left > 0){
-		int skip = 5 + Random::random(0, 7);
+		int skip = 6 + Random::random(0, 7);
 		if (left < skip)
 			break;
 		left -= skip;
-		int streetWidth = 1 + std::max(0, Random::normal(0, 5));
+		int streetWidth = 1 + std::max(0, Random::normal(0, 4));
 		if (left < streetWidth)
 			break;
 		streets.push_back(Ground::makeStreet(glm::vec3{ 0, 0.0f, -worldHeight +left }, Horizontal, streetWidth, worldWidth));
@@ -89,22 +90,31 @@ void TestApp::makeStreets()
 			xoffset = verticalStreets[j].second;
 			if (areaXWidth > 0 || areaZWidth > 0){
 				using namespace glutil;
-				areas.push_back(Area(glm::vec3{ areaBottomLeftX, 0.0f, areaBottomLeftZ - areaZWidth }, areaXWidth, areaZWidth));
+				areas.push_back(Area(glm::vec3{ areaBottomLeftX, 0.0f, areaBottomLeftZ}, areaXWidth, areaZWidth));
 			}
 		}
 		zoffset = horizontalStreets[i].second;
 	}
-	int max = 100;
+	int max = 5;
 	for (const auto& area : areas){
+		if (max == 0) break;
 		max--;
-		if (max == 0) return;
-		int height = 10 + Random::normal(10, 
-			5);
-		BuildingType type = static_cast<BuildingType>(Random::random(0, 2));
-		auto bld = Building::make(type, area.bottomleft, area.xWidth, area.zWidth, height);
-		if (bld) 
-			buildings.push_back(bld);
+		fillArea(area);
 	}
+	makeSidewalks();
+}
+
+void TestApp::makeSidewalks()
+{
+	using namespace glutil;
+	std::vector<Vertex> vertices;
+	std::vector<GLuint> indices;
+	for (const auto& area : areas){
+		Building::constructSidewalk(area.topleft, area.xWidth, area.zWidth, 1, vertices, indices);
+	}
+	std::vector<Mesh> meshes;
+	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::sidewalk()}));
+	sidewalks = std::shared_ptr<Model>(new Model(std::move(meshes)));
 }
 
 void TestApp::updateData()
@@ -140,6 +150,9 @@ void TestApp::render()
 	if (skybox){
 		skybox->draw(view, proj);
 	}
+	if (sidewalks){
+		sidewalks->draw(*(shader.get()));
+	}
 }
 
 void TestApp::updateMovement()
@@ -152,5 +165,15 @@ void TestApp::updateMovement()
 		camera->move(glutil::LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
 		camera->move(glutil::RIGHT, deltaTime);
+}
+
+void TestApp::fillArea(const Area& area)
+{
+	int height = 10 + Random::normal(10,
+		5);
+	BuildingType type = static_cast<BuildingType>(Random::random(0, 2));
+	auto bld = Building::make(type, glm::vec3{area.topleft.x + 1, area.topleft.y, area.topleft.z + 1}, area.xWidth - 2, area.zWidth - 2, height);
+	if (bld)
+		buildings.push_back(bld);
 }
 
