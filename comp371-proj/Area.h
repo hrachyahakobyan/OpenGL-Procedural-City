@@ -6,6 +6,7 @@ struct Area{
 	inline int area() const { return xWidth * zWidth; }
 	inline glm::vec3 getTopleft() const{ return glm::vec3{ bottomleft.x, bottomleft.y, bottomleft.z - zWidth }; }
 	inline glm::vec3 getBottomleft() const { return bottomleft; }
+	inline glm::vec3 getCenter() const { return{ bottomleft.x + xWidth / 2, bottomleft.y, bottomleft.z - zWidth / 2 }; }
 	inline int getXWidth() const { return xWidth; }
 	inline int getZWidth() const { return zWidth; }
 	inline void setBottomleft(const glm::vec3& bottomleft) { this->bottomleft = bottomleft; }
@@ -17,7 +18,6 @@ private:
 	void divideAlongX(std::vector<Area>& subareas, int minXWidth) const;
 	void divideAlongZ(std::vector<Area>& subareas, int minZWidth) const;
 	glm::vec3 bottomleft;
-	glm::vec3 center;
 
 	int xWidth;
 	int zWidth;

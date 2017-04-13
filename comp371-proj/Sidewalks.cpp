@@ -3,24 +3,27 @@
 #include "Textures.h"
 #include "World.h"
 
-Sidewalks::Sidewalks(const World& world, std::vector<Area>& areas) :
-world(world)
+Sidewalks::Sidewalks(const World& world, std::vector<Area>& areas, std::size_t partitions) :
+world(world), sidewalkGrid(partitions, std::vector<ModelPtr>(partitions))
 {
 	using namespace glutil;
 	streetLampArray.reset(new ModelArray(glutil::Model("models/StreetLamp/streetlamp.obj")));
 	streetLampArray->initialAttrib = 3;
 	lampShader = glutil::Shader::fromFile("shaders/vertex_lamp.txt", "shaders/fragment_lamp.txt");
+
 	typedef std::tuple<std::vector<Vertex>, std::vector<GLuint>, std::shared_ptr<Texture>> VertexIndexTuple;
-	std::map<GLuint, VertexIndexTuple> vertexIndexMap;
+	typedef std::map<GLuint, VertexIndexTuple> VertexIndexMap;
+	std::vector<std::vector<VertexIndexMap>> vertexIndexMapGrid(partitions, std::vector<VertexIndexMap>(partitions));
 	for (auto& area : areas){
+		auto coord = areaCoordinate(area);
 		auto texture = Textures::randomSidewalk();
 		GLuint textureID = texture->getResourceID();
-		if (vertexIndexMap.find(textureID) == vertexIndexMap.end()){
-			vertexIndexMap[textureID] = VertexIndexTuple();
-			std::get<2>(vertexIndexMap[textureID]) = texture;
+		auto& currentMap = vertexIndexMapGrid[coord.second][coord.first];
+		if (currentMap.find(textureID) == currentMap.end()){
+			currentMap[textureID] = VertexIndexTuple(std::vector<Vertex>(), std::vector<GLuint>(), texture);
 		}
-		std::vector<Vertex>& vertices = std::get<0>(vertexIndexMap[textureID]);
-		std::vector<GLuint>& indices = std::get<1>(vertexIndexMap[textureID]);
+		std::vector<Vertex>& vertices = std::get<0>(currentMap[textureID]);
+		std::vector<GLuint>& indices = std::get<1>(currentMap[textureID]);
 		auto topleft = area.getTopleft();
 		auto bottomleft = area.getBottomleft();
 		int xWidth = area.getXWidth();
@@ -44,12 +47,19 @@ world(world)
 		area.setXWidth(xWidth - 2);
 		area.setZWidth(zWidth - 2);
 	}
-	for (auto& VI : vertexIndexMap){
-		std::vector<Mesh> meshes;
-		auto& tuple = VI.second;
-		meshes.push_back(Mesh(std::move(std::get<0>(tuple)), std::move(std::get<1>(tuple)), std::vector<std::shared_ptr<Texture>>{std::get<2>(tuple)}));
-		sidewalks[VI.first] = std::shared_ptr<Model>(new Model(std::move(meshes)));
+
+	for (std::size_t row = 0; row < vertexIndexMapGrid.size(); row++){
+		for (std::size_t col = 0; col < vertexIndexMapGrid[row].size(); col++){
+			auto& currentMap = vertexIndexMapGrid[row][col];
+			std::vector<Mesh> meshes;
+			for (auto& VI : currentMap){
+				auto& tuple = VI.second;
+				meshes.push_back(Mesh(std::move(std::get<0>(tuple)), std::move(std::get<1>(tuple)), std::vector<std::shared_ptr<Texture>>{std::get<2>(tuple)}));
+			}
+			sidewalkGrid[row][col].reset(new glutil::Model(std::move(meshes)));
+		}
 	}
+
 	streetLampArray->bufferData();
 }
 
@@ -86,6 +96,19 @@ void Sidewalks::constructSidewalk(const glm::vec3& topleft, int xWidth, int zWid
 	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
 }
 
+std::pair<std::size_t, std::size_t> Sidewalks::areaCoordinate(const Area& a) const
+{
+	float gridWidth = float(world.getWorldWidth()) / sidewalkGrid[0].size();
+	float gridHeight = float(world.getWorldHeight()) / sidewalkGrid.size();
+	glm::vec3 areaCenter = a.getCenter();
+	std::size_t xCoord = std::size_t(std::floor(areaCenter.x / gridWidth));
+	std::size_t yCoord = std::size_t(std::floor((world.getWorldHeight() - std::abs(areaCenter.z)) / gridHeight));
+	xCoord = std::min(xCoord, sidewalkGrid[0].size() - 1);
+	yCoord = std::min(yCoord, sidewalkGrid.size() - 1);
+	return std::make_pair(xCoord, yCoord);
+
+}
+
 void Sidewalks::update()
 {
 	lampShader->use();
@@ -99,7 +122,12 @@ void Sidewalks::draw()
 {
 	if (streetLampArray)
 		streetLampArray->draw(*lampShader);
-	for (const auto& s : sidewalks){
-		s.second->draw(world.getShader());
+	for (const auto& row : sidewalkGrid){
+		for (const auto& col : row){
+			col->draw(world.getShader());
+		}
 	}
+	/*if (sidewalks){
+		sidewalks->draw(world.getShader());
+	}*/
 }

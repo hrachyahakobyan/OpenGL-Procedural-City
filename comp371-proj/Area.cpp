@@ -2,9 +2,10 @@
 #include "Area.h"
 #include "Random.h"
 
-Area::Area(const glm::vec3& bottomleft, int xWidth, int zWidth) : bottomleft(bottomleft), xWidth(xWidth),
-zWidth(zWidth),
-center{ bottomleft.x + xWidth / 2, bottomleft.y, bottomleft.z - zWidth / 2 }
+Area::Area(const glm::vec3& bottomleft, int xWidth, int zWidth) :
+bottomleft(bottomleft),
+xWidth(xWidth),
+zWidth(zWidth)
 {
 }
 

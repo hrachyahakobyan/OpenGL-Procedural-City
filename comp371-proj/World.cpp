@@ -83,7 +83,7 @@ void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vec
 		zoffset = static_cast<int>(horizontalStreets[i].bottomLeft.z) - horizontalStreets[i].width;
 	}
 
-	sidewalks.reset(new Sidewalks(*this, areas));
+	sidewalks.reset(new Sidewalks(*this, areas, 1));
 
 	std::vector<Area> subAreas;
 	glm::vec3 c = center();
@@ -102,7 +102,7 @@ void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vec
 
 void World::fillAreas()
 {
-	int max = 300;
+	int max = 1;
 	for (const auto& area : areas){
 		if (max == 0) break;
 		max--;
