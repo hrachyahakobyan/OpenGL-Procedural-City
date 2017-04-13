@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Ground.h"
+#include "Random.h"
 
 
-std::shared_ptr<glutil::Model> Ground::make(const glm::vec3& bottomleft, int width, int height)
+std::shared_ptr<glutil::Model> Ground::makeGround(const glm::vec3& bottomleft, int width, int height)
 {
 	using namespace glutil;
 	std::vector<Vertex> vertices;
@@ -14,19 +15,52 @@ std::shared_ptr<glutil::Model> Ground::make(const glm::vec3& bottomleft, int wid
 	return std::shared_ptr<Model>(new Model(std::move(meshes)));
 }
 
+void Ground::makeStreets(const glm::vec3& bottomleft, int worldWidth, int worldHeight,
+	std::vector<glutil::Vertex>& v, std::vector<GLuint>& i,
+	std::vector<Street>& vertical,
+	std::vector<Street>& horizontal)
+{
+	int left = worldWidth;
+	float wHeight = float(worldHeight);
+	float wWidth = float(worldWidth);
+	while (left > 0){
+		int skip = 7 + Random::random(0, 7);
+		if (left < skip)
+			break;
+		left -= skip;
+		int streetWidth = 2 + std::max(0, Random::normal(1, 4));
+		if (left < streetWidth)
+			break;
+		Street street(Vertical, glm::vec3{ bottomleft.x + wWidth - left, bottomleft.y, bottomleft.z }, streetWidth, wHeight);
+		Ground::makeStreet(street, v, i);
+		vertical.push_back(street);
+		left -= streetWidth;
+	}
+	vertical.push_back(Street(Vertical, glm::vec3{ bottomleft.x + wWidth, bottomleft.y, bottomleft.z },
+		0, wHeight));
+	left = worldHeight;
+	while (left > 0){
+		int skip = 7 + Random::random(0, 7);
+		if (left < skip)
+			break;
+		left -= skip;
+		int streetWidth = 2 + std::max(0, Random::normal(1, 4));
+		if (left < streetWidth)
+			break;
+		Street street(Horizontal, glm::vec3{ bottomleft.x, bottomleft.y, bottomleft.z - wHeight + left }, streetWidth, wWidth);
+		Ground::makeStreet(street, v, i);
+		horizontal.push_back(street);
+		left -= streetWidth;
+	}
+	horizontal.push_back(Street(Horizontal, glm::vec3{ bottomleft.x, bottomleft.y, bottomleft.z - wHeight }, 0, wWidth));
+}
 
-std::shared_ptr<glutil::Model> Ground::makeStreet(const glm::vec3& bottomleft, StreetDirection dir, int width, int height)
+void Ground::makeStreet(const Street& street, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices)
 {
 	using namespace glutil;
-	std::vector<Vertex> vertices;
-	std::vector<GLuint> indices;
-	if (dir == Vertical)
-		Mesh::grid2D(bottomleft, glm::vec3{1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, width, height, vertices, indices);
+	if (street.direction == Vertical)
+		Mesh::grid2D(street.bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, street.width, street.length, vertices, indices);
 	else
-		Mesh::grid2D(bottomleft, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, width, height, vertices, indices);
-	std::vector<Mesh> meshes;
-	meshes.push_back(Mesh(std::move(vertices), std::move(indices)));
-	meshes.back().addTexture(Texture::fromFile("textures\\road2.jpg", GL_TEXTURE_2D, Diffusive));
-	return std::shared_ptr<Model>(new Model(std::move(meshes)));
+		Mesh::grid2D(street.bottomLeft, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, street.width, street.length, vertices, indices);
 }
 

@@ -14,3 +14,16 @@ int Random::normal(int mean, int stdev, bool clamp)
 	std::normal_distribution<double> distribution(mean, stdev);
 	return static_cast<int>(distribution(generator));
 }
+
+bool Random::dice(float probability)
+{
+	if (probability <= 0) return false;
+	if (probability >= 1) return true;
+	int val = Random::random(0, 1000000);
+	return (val <= int(probability * 1000000));
+}
+
+bool Random::coin()
+{
+	return Random::random(0, 1) == 1;
+}

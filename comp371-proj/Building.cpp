@@ -12,13 +12,16 @@ std::shared_ptr<glutil::Model> Building::make(BuildingType type, const glm::vec3
 		return makeBlocky(topleft, xWidth, zWidth, height);
 	case Tower:
 		return makeTower(topleft, xWidth, zWidth, height);
+	case Cube:
+		return makeCube(topleft, xWidth, zWidth, height);
 	}
 	return nullptr;
 }
 
 std::shared_ptr<glutil::Model> Building::makeClassical(const glm::vec3& topleft, int xWidth, int zWidth, int height)
 {
-	if (xWidth < 2 || zWidth < 2) return nullptr;
+	if (xWidth < 2 || zWidth < 2) 
+		return nullptr;
 	using namespace glutil;
 	int tier_frac = 2 + Random::random(0, 3);
 	int narrow_interval = 1 + Random::random(0, 1);
@@ -80,13 +83,14 @@ std::shared_ptr<glutil::Model> Building::makeClassical(const glm::vec3& topleft,
 	meshes[0].addTexture(Textures::randomWindow());
 	meshes[1].addTexture(Textures::randomFacade());
 	auto model = std::shared_ptr<Model>(new Model(std::move(meshes)));
-	constructRoof(*model.get(), Classical, origin, bottom, xWidth, zWidth);
+	constructRoof(*model.get(), Classical, origin, xWidth, zWidth);
 	return model;
 }
 
 std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, int xWidth, int zWidth, int height)
 {
-	if (xWidth < 2 || zWidth < 2) return nullptr;
+	if (xWidth < 2 || zWidth < 2) 
+		return nullptr;
 	using namespace glutil;
 	int left, right, front, back;
 	int max_left, max_right, max_front, max_back;
@@ -159,13 +163,14 @@ std::shared_ptr<glutil::Model> Building::makeBlocky(const glm::vec3& topleft, in
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
 	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomFacade()}));
 	std::shared_ptr<Model> model(new Model(std::move(meshes)));
-	constructRoof(*model.get(), Blocky, roofTopleft, roofHeight, roofxWidth, roofzWidth);
+	constructRoof(*model.get(), Blocky, roofTopleft, roofxWidth, roofzWidth);
 	return model;
 }
 
 std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int xWidth, int zWidth, int height)
 {
-	if (xWidth < 2 || zWidth < 2) return nullptr;
+	if (xWidth < 2 || zWidth < 2) 
+		return nullptr;
 	using namespace glutil;
 	int spans = 3 + Random::random(0, 8);
 	float narrowScale = 0.2f;
@@ -190,10 +195,7 @@ std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int
 	std::vector<GLuint> indices;
 	std::vector<Vertex> roofVertices;
 	std::vector<GLuint> roofIndices;
-	std::vector<Vertex> groundVertices;
-	std::vector<GLuint> groundIndices;
 
-	Mesh::grid2D(glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, groundVertices, groundIndices);
 	while (true){
 		if (tiers >= max_tiers)
 			break;
@@ -222,7 +224,7 @@ std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int
 			glm::vec3 d1 = glm::normalize(next - prev);
 			std::size_t windowCount = std::ceil(glm::distance(next, prev));
 			d1 = d1 * (distance / windowCount);
-			Mesh::grid2D(prev, d1, d2, glm::cross(d1, d2), windowCount, tier_height, vertices, indices);
+			Mesh::grid2D(prev, d1, d2, glm::cross(d2, d1), windowCount, tier_height, vertices, indices);
 		}
 		height_left -= tier_height;
 		bottom += tier_height;
@@ -236,19 +238,31 @@ std::shared_ptr<glutil::Model> Building::makeTower(const glm::vec3& topleft, int
 	meshes.reserve(2);
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
 	meshes.push_back(Mesh(std::move(roofVertices), std::move(roofIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
-	meshes.push_back(Mesh(std::move(groundVertices), std::move(groundIndices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
 	return std::shared_ptr<Model>(new Model(std::move(meshes)));
 }
 
+std::shared_ptr<glutil::Model> Building::makeCube(const glm::vec3& topleft, int xWidth, int zWidth, int height)
+{
+	if (xWidth < 2 || zWidth < 2) 
+		return nullptr;
+	using namespace glutil;
+	std::vector<Vertex> vertices;
+	std::vector<GLuint> indices;
+	Mesh::rectangle(topleft, xWidth, zWidth, 1.0f, 1.0f, height, false, false, vertices, indices);
+	std::vector<Mesh> meshes;
+	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomWindow()}));
+	std::shared_ptr<Model> model(new Model(std::move(meshes)));
+	constructRoof(*model.get(), Cube, glm::vec3{topleft.x, topleft.y + height, topleft.z}, xWidth, zWidth);
+	return model;
+}
 
-
-void Building::constructRoof(glutil::Model& building, BuildingType type, const glm::vec3& topleft, int height, int xWidth, int zWidth)
+void Building::constructRoof(glutil::Model& building, BuildingType type, const glm::vec3& topleft, int xWidth, int zWidth)
 {
 	using namespace glutil;
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
 	Mesh::grid2D(glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, vertices, indices);
-	building.add(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomGround()}));
+	building.add(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomRoof()}));
 }
 
 // Assuming the polygon is in the counterclockwise direction
@@ -270,37 +284,9 @@ void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vec
 	int indexCounter = 0;
 	GLuint last = points.size();
 	for (std::size_t i = 0; i < points.size(); i++){
-		indices.push_back(vertexSizeBefore + last);
-		indices.push_back(vertexSizeBefore + i);
 		indices.push_back(vertexSizeBefore + (i + 1) % points.size());
+		indices.push_back(vertexSizeBefore + i);
+		indices.push_back(vertexSizeBefore + last);
 	}
 }
 
-void Building::constructSidewalk(const glm::vec3& topleft, int xWidth, int zWidth, int depth, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices)
-{
-	if (xWidth - 2 < depth || zWidth - 2 < depth)
-		return;
-	// Horizontal strip
-	using namespace glutil;
-	glm::vec3 bottomleft{ topleft.x, topleft.y, topleft.z + depth };
-	glm::vec3 d1{ 1.0f, 0.0f, 0.0f };
-	glm::vec3 d2{ 0.0f, 0.0f, -1.0f };
-	glm::vec3 normal{ 0.0f, 1.0f, 0.0f };
-	Mesh::grid2D(bottomleft, d1, d2, normal, xWidth, depth, vertices, indices);
-	// Rightmost vertical strip
-	bottomleft.x += (xWidth - depth);
-	d1 = glm::vec3{ 0.0f, 0.0f, 1.0f };
-	d2 = glm::vec3{ 1.0f, 0.0f, 0.0f };
-	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
-	// Bottom strip
-	bottomleft = glm::vec3{ topleft.x, topleft.y, topleft.z + zWidth };
-	d1 = glm::vec3{ 1.0f, 0.0f, 0.0f };
-	d2 = glm::vec3{ 0.0f, 0.0f, -1.0f };
-	Mesh::grid2D(bottomleft, d1, d2, normal, xWidth, depth, vertices, indices);
-	// Leftmost vertical strip
-	bottomleft.z -= depth;
-	bottomleft.x += depth;
-	d1 = glm::vec3{ 0.0f, 0.0f, -1.0f };
-	d2 = glm::vec3{ -1.0f, 0.0f, 0.0f };
-	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
-}

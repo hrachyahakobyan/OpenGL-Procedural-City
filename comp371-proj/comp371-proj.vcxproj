@@ -82,25 +82,35 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Area.h" />
     <ClInclude Include="Building.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Random.h" />
+    <ClInclude Include="Sidewalks.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Street.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestApp.h" />
     <ClInclude Include="Textures.h" />
+    <ClInclude Include="Vehicles.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Area.cpp" />
     <ClCompile Include="Building.cpp" />
     <ClCompile Include="comp371-proj.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="Random.cpp" />
+    <ClCompile Include="Sidewalks.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Street.cpp" />
     <ClCompile Include="TestApp.cpp" />
     <ClCompile Include="Textures.cpp" />
+    <ClCompile Include="Vehicles.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

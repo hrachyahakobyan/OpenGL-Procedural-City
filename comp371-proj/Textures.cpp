@@ -9,6 +9,13 @@ std::shared_ptr<glutil::Texture> Textures::randomWindow()
 	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }
 
+std::shared_ptr<glutil::Texture> Textures::randomRoad()
+{
+	int w = Random::random(1, roads);
+	std::string name = "textures\\road" + std::to_string(w) + ".jpg";
+	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
+}
+
 std::shared_ptr<glutil::Texture> Textures::randomFacade()
 {
 	int f = Random::random(1, facades);
@@ -27,11 +34,13 @@ std::shared_ptr<glutil::Texture> Textures::randomGround()
 std::shared_ptr<glutil::Texture> Textures::randomRoof()
 {
 	int f = Random::random(1, roofs);
-	std::string name = "textures\\roofs" + std::to_string(f) + ".jpg";
+	std::string name = "textures\\roof" + std::to_string(f) + ".jpg";
 	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }
 
-std::shared_ptr<glutil::Texture> Textures::sidewalk()
+std::shared_ptr<glutil::Texture> Textures::randomSidewalk()
 {
-	return glutil::Texture::fromFile("textures\\sidewalk1.jpg", GL_TEXTURE_2D, glutil::Diffusive);
+	int f = Random::random(1, sidewalks);
+	std::string name = "textures\\sidewalk" + std::to_string(f) + ".jpg";
+	return glutil::Texture::fromFile(name, GL_TEXTURE_2D, glutil::Diffusive);
 }

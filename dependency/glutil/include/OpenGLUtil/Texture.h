@@ -34,6 +34,8 @@ namespace glutil{
 		*/
 		static std::shared_ptr<Texture> fromFile(const std::string& filename, GLenum textureType, MaterialType mType);
 
+		static std::shared_ptr<Texture> cubemap(const std::string& path, const std::vector<std::string>& faces);
+
 		inline static std::size_t textureCount(){ return textures.size(); }
 
 		/**

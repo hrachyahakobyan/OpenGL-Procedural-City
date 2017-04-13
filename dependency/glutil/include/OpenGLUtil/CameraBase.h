@@ -64,6 +64,8 @@ namespace glutil{
 		inline GLfloat getMinZoom() const;
 		void setMinZoom(GLfloat minZoom);
 
+		inline glm::vec3 getPosition() const;
+
 	protected:
 		// Camera Attributes
 		glm::vec3 position;
@@ -103,5 +105,10 @@ namespace glutil{
 	GLfloat CameraBase::getMinZoom() const
 	{
 		return minZoom;
+	}
+
+	glm::vec3 CameraBase::getPosition() const
+	{
+		return position;
 	}
 }
