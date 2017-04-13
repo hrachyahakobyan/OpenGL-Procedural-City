@@ -33,12 +33,6 @@ private:
 
 	int calculateHeightForArea(const Area& area) const;
 	float calculateHeightCoefficientForDistance(float dist) const;
-	ModelPtr make(BuildingType, const glm::vec3& topleft, int xWidth, int zWidth, int height);
-	ModelPtr makeClassical(const glm::vec3& topleft, int xWidth, int zWidth, int height);
-	ModelPtr makeBlocky(const glm::vec3& topleft, int xWidth, int zWidth, int height);
-	ModelPtr makeTower(const glm::vec3& topleft, int xWidth, int zWidth, int height);
-	ModelPtr makeCube(const glm::vec3& topleft, int xWidth, int zWidth, int height);
-	void constructRoof(glutil::Model& building, BuildingType type, const glm::vec3& topleft,  int xWidth, int zWidth);
 	void triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height);
 };
 

@@ -11,7 +11,7 @@ world(world)
 	modelArrays = std::vector<ModelArray>{ glutil::Model("models/Taxi/Taxi.obj"),
 		glutil::Model("models/Car/Car.obj"),
 		glutil::Model("models/Bus/bus.obj") };
-	int vehiclesTotal = 100;
+	int vehiclesTotal = 400;
 	int vehiclesPerLane = std::max(int(vehiclesTotal / lanes.size()), 1);
 	for (const auto& lane : lanes){
 		std::vector<glm::vec3> positions = lane.getVehiclePositions(3.0f, vehiclesPerLane);
@@ -27,17 +27,17 @@ world(world)
 		std::swap(get<0>(vehicleData)[i], get<0>(vehicleData)[j]);
 	}
 	speedErrors = std::vector<float>(vehicleData.first.size());
-	double busProb = 0.3f;
+	double busProb = 0.05;
 	for (int i = 0; i < vehicleData.first.size(); i++){
 		double isBus = Random::dice(busProb);
-		double isTaxi = (!isBus && Random::dice(0.5f));
+		double isTaxi = (!isBus && Random::dice(0.4f));
 		ModelArray* arr = &modelArrays[0];
 		if (isBus)
 			arr = &modelArrays[2];
 		else if (isTaxi)
 			arr = &modelArrays[1];
 		arr->instanceData.push_back(tuple<glm::mat4>());
-		speedErrors[i] = Random::random(-100, 100) / 100.f;
+		speedErrors[i] = Random::random(-100, 100) / 200.f;
 	}
 	modelArrays[0].initialAttrib = 3;
 	modelArrays[1].initialAttrib = 3;

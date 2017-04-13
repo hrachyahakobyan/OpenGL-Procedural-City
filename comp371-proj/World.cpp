@@ -39,11 +39,11 @@ void World::initialize(int worldWidth, int worldHeight)
 	skybox = glutil::Skybox::make("textures\\skybox", faces);
 	makeStreets();
 	std::vector<Lane> lanes;
-	for (std::size_t i = 0; i < 5; i++){
+	for (std::size_t i = 0; i < vStreets.size() - 1; i++){
 		auto l = vStreets[i].getLanes();
 		lanes.insert(lanes.end(), l.begin(), l.end());
 	}
-	for (std::size_t i = 0; i < 5; i++){
+	for (std::size_t i = 0; i < hStreets.size() - 1; i++){
 		auto l = hStreets[i].getLanes();
 		lanes.insert(lanes.end(), l.begin(), l.end());
 	}
