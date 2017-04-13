@@ -61,7 +61,7 @@ void World::makeStreets()
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices), std::vector<std::shared_ptr<Texture>>{Textures::randomRoad()}));
 	streets = std::shared_ptr<Model>(new Model(std::move(meshes)));
 	makeAreas(vStreets, hStreets);
-	fillAreas();
+	buildings.reset(new Building(*this, areas, 2));
 }
 
 void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vector<Street>& horizontalStreets)
@@ -100,36 +100,17 @@ void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vec
 	areas = std::move(subAreas);
 }
 
-void World::fillAreas()
+std::pair<std::size_t, std::size_t> World::areaCoordinate(const Area& a, std::size_t width, std::size_t height) const
 {
-	int max = 1;
-	for (const auto& area : areas){
-		if (max == 0) break;
-		max--;
-		fillArea(area);
-	}
-}
+	float gridWidth = float(worldWidth) / width;
+	float gridHeight = float(worldHeight) / height;
+	glm::vec3 areaCenter = a.getCenter();
+	std::size_t xCoord = std::size_t(std::floor(areaCenter.x / gridWidth));
+	std::size_t yCoord = std::size_t(std::floor((worldHeight - std::abs(areaCenter.z)) / gridHeight));
+	xCoord = std::min(xCoord, width - 1);
+	yCoord = std::min(yCoord, height - 1);
+	return std::make_pair(xCoord, yCoord);
 
-int World::calculateHeightForArea(const Area& area) const
-{
-	float dist = glm::distance(area.getBottomleft(), center());
-	int noise = std::max(0, 2 * Random::normal(0, 3));
-	return std::max(2, int(maxHeight * calculateHeightCoefficientForDistance(dist)) + noise);
-}
-
-float World::calculateHeightCoefficientForDistance(float dist) const
-{
-	float distMax = glm::distance(glm::vec3{ 0.0f, 0.0f, 0.0f }, center());
-	return glm::max(glm::exp( -dist / distMax) - 1.0f / glm::e<float>(), 0.0f);
-}
-
-void World::fillArea(const Area& area)
-{
-	int height = calculateHeightForArea(area);
-	BuildingType type = static_cast<BuildingType>(Random::random(0, 3));
-	auto bld = Building::make(type, area.getTopleft(), area.getXWidth(), area.getZWidth(), height);
-	if (bld)
-		buildings.push_back(bld);
 }
 
 void World::update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& viewPos)
@@ -138,8 +119,11 @@ void World::update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 
-	glm::mat4 rot = glm::rotate(glm::mat4(1.f), deltaTime / 10.0f, glm::vec3{ 0.0f, 0.0f, 1.0f });
+	glm::mat4 rot = glm::rotate(glm::mat4(1.f), deltaTime / 2.0f, glm::vec3{ 0.0f, 0.0f, 1.0f });
 	lightDirection = rot * glm::vec4(lightDirection, 1.0f);
+	lightDirection = glm::normalize(lightDirection);
+	float dot = glm::dot(-lightDirection, glm::vec3{ 0.0f, 1.0f, 0.0 });
+	lightColor = glm::vec3(std::max(dot, 0.1f));
 
 	this->view = view;
 	this->proj = proj;
@@ -156,9 +140,12 @@ void World::update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3
 	glUniform3f(viewPosLoc, viewPos.x, viewPos.y, viewPos.z);
 	GLint lightDirLoc = glGetUniformLocation(bldShader->getProgram(), "lightDirection");
 	glUniform3f(lightDirLoc, lightDirection.x, lightDirection.y, lightDirection.z);
+	GLint lightColorLoc = glGetUniformLocation(bldShader->getProgram(), "lightColor");
+	glUniform3f(lightColorLoc, lightColor.x, lightColor.y, lightColor.z);
 
 	vehicles->update();
 	sidewalks->update();
+	buildings->update();
 }
 
 
@@ -170,8 +157,8 @@ void World::draw()
 	if (streets){
 		streets->draw(*(bldShader.get()));
 	}
-	for (const auto& bld : buildings){
-		bld->draw(*(bldShader.get()));
+	if (buildings){
+		buildings->draw();
 	}
 	if (skybox){
 		skybox->draw(view, proj);

@@ -3,6 +3,7 @@
 #include "Ground.h"
 #include "Vehicles.h"
 #include "Sidewalks.h"
+#include "Building.h"
 
 class World
 {
@@ -23,7 +24,10 @@ public:
 	inline const glm::vec3& getLightDirection() const { return lightDirection; }
 	inline const glutil::Shader& getShader() const { return *bldShader; }
 	inline const GLfloat getDeltaTime() const { return deltaTime; }
+	inline glm::vec3 center() const;
+	std::pair<std::size_t, std::size_t> areaCoordinate(const Area& a, std::size_t width, std::size_t height) const;
 private:
+	typedef std::shared_ptr<glutil::Model> ModelPtr;
 	glm::mat4 view;
 	glm::mat4 proj;
 	glm::vec3 viewPos;
@@ -35,23 +39,22 @@ private:
 	glm::vec3 lightColor;
 	std::unique_ptr<Vehicles> vehicles;
 	std::unique_ptr<Sidewalks> sidewalks;
+	std::unique_ptr<Building> buildings;
 	std::shared_ptr<glutil::Shader> bldShader;
 	std::shared_ptr<glutil::Model> ground;
 	std::shared_ptr<glutil::Model> streets;
-	std::vector<std::shared_ptr<glutil::Model>> buildings;
+
 	std::shared_ptr<glutil::Skybox> skybox;
 	std::vector<Area> areas;
 	std::vector<Street> vStreets;
 	std::vector<Street> hStreets;
 	GLfloat deltaTime = 0.0f;
 	GLfloat lastFrame = 0.0f;
-	inline glm::vec3 center() const;
+
 	void makeStreets();
 	void makeAreas(const std::vector<Street>& v, const std::vector<Street>& h);
-	void fillAreas();
-	void fillArea(const Area&);
-	int calculateHeightForArea(const Area& area) const;
-	float calculateHeightCoefficientForDistance(float dist) const;
+
+
 };
 
 glm::vec3 World::center() const

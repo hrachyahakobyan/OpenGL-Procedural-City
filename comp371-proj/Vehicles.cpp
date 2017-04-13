@@ -65,7 +65,9 @@ void Vehicles::update()
 	glUniform3f(viewPosLoc, world.getViewPos().x, world.getViewPos().y, world.getViewPos().z);
 	GLint lightDirLoc = glGetUniformLocation(shader->getProgram(), "lightDirection");
 	glUniform3f(lightDirLoc, world.getLightDirection().x, world.getLightDirection().y, world.getLightDirection().z);
-
+	GLint lightColorLoc = glGetUniformLocation(shader->getProgram(), "lightColor");
+	glUniform3f(lightColorLoc, world.getLightColor().x, world.getLightColor().y, world.getLightColor().z);
+	
 	std::size_t index = 0;
 	for (std::size_t i = 0; i < modelArrays.size(); i++){
 		float speed = speeds[i] + speedErrors[index];

@@ -15,13 +15,11 @@ world(world), sidewalkGrid(partitions, std::vector<ModelPtr>(partitions))
 	typedef std::map<GLuint, VertexIndexTuple> VertexIndexMap;
 	std::vector<std::vector<VertexIndexMap>> vertexIndexMapGrid(partitions, std::vector<VertexIndexMap>(partitions));
 	for (auto& area : areas){
-		auto coord = areaCoordinate(area);
+		auto coord = world.areaCoordinate(area, partitions, partitions);
 		auto texture = Textures::randomSidewalk();
 		GLuint textureID = texture->getResourceID();
 		auto& currentMap = vertexIndexMapGrid[coord.second][coord.first];
-		if (currentMap.find(textureID) == currentMap.end()){
-			currentMap[textureID] = VertexIndexTuple(std::vector<Vertex>(), std::vector<GLuint>(), texture);
-		}
+		std::get<2>(currentMap[textureID]) = texture;
 		std::vector<Vertex>& vertices = std::get<0>(currentMap[textureID]);
 		std::vector<GLuint>& indices = std::get<1>(currentMap[textureID]);
 		auto topleft = area.getTopleft();
@@ -51,6 +49,7 @@ world(world), sidewalkGrid(partitions, std::vector<ModelPtr>(partitions))
 	for (std::size_t row = 0; row < vertexIndexMapGrid.size(); row++){
 		for (std::size_t col = 0; col < vertexIndexMapGrid[row].size(); col++){
 			auto& currentMap = vertexIndexMapGrid[row][col];
+			if (currentMap.empty()) continue;
 			std::vector<Mesh> meshes;
 			for (auto& VI : currentMap){
 				auto& tuple = VI.second;
@@ -96,19 +95,6 @@ void Sidewalks::constructSidewalk(const glm::vec3& topleft, int xWidth, int zWid
 	Mesh::grid2D(bottomleft, d1, d2, normal, zWidth - 2 * depth, depth, vertices, indices);
 }
 
-std::pair<std::size_t, std::size_t> Sidewalks::areaCoordinate(const Area& a) const
-{
-	float gridWidth = float(world.getWorldWidth()) / sidewalkGrid[0].size();
-	float gridHeight = float(world.getWorldHeight()) / sidewalkGrid.size();
-	glm::vec3 areaCenter = a.getCenter();
-	std::size_t xCoord = std::size_t(std::floor(areaCenter.x / gridWidth));
-	std::size_t yCoord = std::size_t(std::floor((world.getWorldHeight() - std::abs(areaCenter.z)) / gridHeight));
-	xCoord = std::min(xCoord, sidewalkGrid[0].size() - 1);
-	yCoord = std::min(yCoord, sidewalkGrid.size() - 1);
-	return std::make_pair(xCoord, yCoord);
-
-}
-
 void Sidewalks::update()
 {
 	lampShader->use();
@@ -124,10 +110,8 @@ void Sidewalks::draw()
 		streetLampArray->draw(*lampShader);
 	for (const auto& row : sidewalkGrid){
 		for (const auto& col : row){
-			col->draw(world.getShader());
+			if (col)
+				col->draw(world.getShader());
 		}
 	}
-	/*if (sidewalks){
-		sidewalks->draw(world.getShader());
-	}*/
 }

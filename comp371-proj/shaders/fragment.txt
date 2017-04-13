@@ -15,7 +15,7 @@ void main()
 {   
     vec4 objectColor = vec4(texture(texture_diffuse1, TexCoords));  
 
-    float ambientStrength = 0.2f;
+    float ambientStrength = 0.3f;
     vec3 ambient = ambientStrength * lightColor;
 
     // Diffuse 
