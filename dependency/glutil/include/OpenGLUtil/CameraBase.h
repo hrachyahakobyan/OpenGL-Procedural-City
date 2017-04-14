@@ -42,6 +42,8 @@ namespace glutil{
 		*/
 		virtual void move(CameraMovement direction, GLfloat deltaTime);
 
+		virtual glm::vec3 calculatePosition(const glm::vec3& oldPosition, CameraMovement direction, GLfloat deltaTime) const;
+
 		/**
 		*	Rotates the camera. Default implementation does nothing.
 		*	The meaning of parameters differs depending on implementation.
@@ -65,6 +67,9 @@ namespace glutil{
 		void setMinZoom(GLfloat minZoom);
 
 		inline glm::vec3 getPosition() const;
+		void setPosition(const glm::vec3& position);
+
+		inline glm::vec3 getFront() const { return front; }
 
 	protected:
 		// Camera Attributes

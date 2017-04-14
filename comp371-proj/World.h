@@ -25,8 +25,10 @@ public:
 	inline const glutil::Shader& getShader() const { return *bldShader; }
 	inline const GLfloat getDeltaTime() const { return deltaTime; }
 	inline glm::vec3 center() const;
+	bool intersectsPoint(const glm::vec3& point) const;
 	std::pair<std::size_t, std::size_t> areaCoordinate(const Area& a, std::size_t width, std::size_t height) const;
 private:
+	std::size_t gridPartitions;
 	typedef std::shared_ptr<glutil::Model> ModelPtr;
 	glm::mat4 view;
 	glm::mat4 proj;
@@ -43,9 +45,9 @@ private:
 	std::shared_ptr<glutil::Shader> bldShader;
 	std::shared_ptr<glutil::Model> ground;
 	std::shared_ptr<glutil::Model> streets;
-
 	std::shared_ptr<glutil::Skybox> skybox;
 	std::vector<Area> areas;
+	std::vector<std::vector<std::vector<const Area*>>> areaGrid;
 	std::vector<Street> vStreets;
 	std::vector<Street> hStreets;
 	GLfloat deltaTime = 0.0f;
@@ -53,8 +55,8 @@ private:
 
 	void makeStreets();
 	void makeAreas(const std::vector<Street>& v, const std::vector<Street>& h);
-
-
+	void initializeAreaGrid();
+	std::pair<std::size_t, std::size_t> gridCoordinate(const glm::vec3& vec, bool& contains) const;
 };
 
 glm::vec3 World::center() const

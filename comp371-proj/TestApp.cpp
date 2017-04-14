@@ -52,13 +52,17 @@ void TestApp::render()
 
 void TestApp::updateMovement()
 {
+	glm::vec3 currentPos = camera->getPosition();
 	if (keys[GLFW_KEY_W])
-		camera->move(glutil::FORWARD, deltaTime);
+		currentPos = camera->calculatePosition(currentPos, glutil::FORWARD, deltaTime);
 	if (keys[GLFW_KEY_S])
-		camera->move(glutil::BACKWARD, deltaTime);
+		currentPos = camera->calculatePosition(currentPos, glutil::BACKWARD, deltaTime);
 	if (keys[GLFW_KEY_A])
-		camera->move(glutil::LEFT, deltaTime);
+		currentPos = camera->calculatePosition(currentPos, glutil::LEFT, deltaTime);
 	if (keys[GLFW_KEY_D])
-		camera->move(glutil::RIGHT, deltaTime);
+		currentPos = camera->calculatePosition(currentPos, glutil::RIGHT, deltaTime);
+	if ((keys[GLFW_KEY_W] || keys[GLFW_KEY_S] || keys[GLFW_KEY_A] || keys[GLFW_KEY_D]) && !world.intersectsPoint(currentPos + 3.f * deltaTime * camera->getFront())){
+		camera->setPosition(currentPos);
+	}
 }
 

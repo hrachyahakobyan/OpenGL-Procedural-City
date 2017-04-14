@@ -10,7 +10,7 @@ class World;
 class Building
 {
 public:
-	Building(const World& worldRef, const std::vector<Area>& areas, std::size_t partitions);
+	Building(const World& worldRef, std::vector<Area>& areas, std::size_t partitions);
 	void update();
 	void draw();
 private:
@@ -23,13 +23,13 @@ private:
 	const World& world;
 	const int maxHeight = 50;
 
-	void fillArea(const Area& area, VertexIndexMap& map);
-	void makeBuilding(const Area& area, int height, VertexIndexMap& map);
-	void makeCube(const Area& area, int height, VertexIndexMap& map);
-	void makeBlocky(const Area& area, int height, VertexIndexMap& map);
-	void makeRoof(const Area& area, BuildingType type, VertexIndexMap& map);
-	void makeClassical(const Area& area, int height, VertexIndexMap& map);
-	void makeTower(const Area& area, int height, VertexIndexMap& map);
+	void fillArea(Area& area, VertexIndexMap& map);
+	void makeBuilding(Area& area, int height, VertexIndexMap& map);
+	void makeCube(Area& area, int height, VertexIndexMap& map);
+	void makeBlocky(Area& area, int height, VertexIndexMap& map);
+	void makeRoof(Area& area, BuildingType type, VertexIndexMap& map);
+	void makeClassical(Area& area, int height, VertexIndexMap& map);
+	void makeTower(Area& area, int height, VertexIndexMap& map);
 
 	int calculateHeightForArea(const Area& area) const;
 	float calculateHeightCoefficientForDistance(float dist) const;

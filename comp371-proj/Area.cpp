@@ -9,11 +9,9 @@ zWidth(zWidth)
 {
 }
 
-
 Area::~Area()
 {
 }
-
 
 void Area::subdivide(std::vector<Area>& subAreas, int minXWidth, int minZWidth, int depth) const
 {
@@ -80,5 +78,35 @@ void Area::divideAlongZ(std::vector<Area>& subareas, int minZWidth) const
 		topAreaZWidth -= 1;
 	}
 	subareas.push_back(Area(topAreaBottomleft, xWidth, topAreaZWidth));
+}
 
+void Area::addVolume(const Volume& vol)
+{
+	volumes.push_back(vol);
+}
+
+bool Area::contains(const glm::vec3& pt) const
+{
+	for (const auto& v : volumes){
+		if (v.contains(pt)) return true;
+	}
+	return false;
+}
+
+Volume::Volume(const Area& area, float height) :
+area(area), height(height)
+{
+}
+
+Volume::~Volume()
+{
+}
+
+bool Volume::contains(const glm::vec3& point) const
+{
+	auto bl = area.getBottomleft();
+	if (point.y < bl.y || point.y >(bl.y + height))
+		return false;
+	return (point.x > bl.x && point.x < (bl.x + area.getXWidth())) &&
+		(point.z < bl.z && point.z >(bl.z - area.getZWidth()));
 }

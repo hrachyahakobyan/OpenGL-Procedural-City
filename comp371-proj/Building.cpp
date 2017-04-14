@@ -5,7 +5,7 @@
 #include "World.h"
 
 
-Building::Building(const World& world, const std::vector<Area>& areas, std::size_t partitions) :
+Building::Building(const World& world, std::vector<Area>& areas, std::size_t partitions) :
 world(world), buildingGrids(partitions, std::vector<ModelPtr>(partitions))
 {
 	using namespace glutil;
@@ -35,13 +35,13 @@ world(world), buildingGrids(partitions, std::vector<ModelPtr>(partitions))
 	}
 }
 
-void Building::fillArea(const Area& area, VertexIndexMap& map)
+void Building::fillArea(Area& area, VertexIndexMap& map)
 {
 	int height = calculateHeightForArea(area);
 	makeBuilding(area, height, map);
 }
 
-void Building::makeBuilding(const Area& area, int height, VertexIndexMap& map)
+void Building::makeBuilding(Area& area, int height, VertexIndexMap& map)
 {
 	BuildingType type = static_cast<BuildingType>(Random::random(0, 3));
 	switch (type){
@@ -74,7 +74,7 @@ void Building::draw()
 	}
 }
 
-void Building::makeCube(const Area& area, int height, VertexIndexMap& map)
+void Building::makeCube(Area& area, int height, VertexIndexMap& map)
 {
 	if (area.getXWidth() < 2 || area.getZWidth() < 2)
 		return;
@@ -84,13 +84,14 @@ void Building::makeCube(const Area& area, int height, VertexIndexMap& map)
 	std::get<2>(map[windowTextureID]) = windowTexture;
 	std::vector<Vertex>& vertices = std::get<0>(map[windowTextureID]);
 	std::vector<GLuint>& indices = std::get<1>(map[windowTextureID]);
+	area.addVolume(Volume(area, height));
 	Mesh::rectangle(area.getTopleft(), area.getXWidth(), area.getZWidth(), 1.0f, 1.0f, height, false, false, vertices, indices);
 	glm::vec3 roofAreaTopleft = area.getTopleft();
 	roofAreaTopleft.y += height;
 	makeRoof(Area::fromTopleft(roofAreaTopleft, area.getXWidth(), area.getZWidth()), Cube, map);
 }
 
-void Building::makeRoof(const Area& area, BuildingType type, VertexIndexMap& map)
+void Building::makeRoof(Area& area, BuildingType type, VertexIndexMap& map)
 {
 	using namespace glutil;
 	auto roofTexture = Textures::randomRoof();
@@ -103,7 +104,7 @@ void Building::makeRoof(const Area& area, BuildingType type, VertexIndexMap& map
 	Mesh::grid2D(bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, area.getXWidth(), area.getZWidth(), vertices, indices);
 }
 
-void Building::makeBlocky(const Area& area, int height, VertexIndexMap& map)
+void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 {
 	int xWidth = area.getXWidth();
 	int zWidth = area.getZWidth();
@@ -144,6 +145,7 @@ void Building::makeBlocky(const Area& area, int height, VertexIndexMap& map)
 	std::vector<GLuint>& roofIndices = std::get<1>(facadeItemref);
 
 	Mesh::rectangle(topleft, xWidth, zWidth, 1.0f, 1.0f, foundation, false, false, vertices, indices);
+	area.addVolume(Volume(area, 1.0f));
 	Mesh::grid2D(glm::vec3{ topleft.x, foundation, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, roofVertices, roofIndices);
 	height -= foundation;
 
@@ -171,6 +173,7 @@ void Building::makeBlocky(const Area& area, int height, VertexIndexMap& map)
 			max_back = std::max(back, max_back);
 			glm::vec3 topleft{ mid_x - left, 0, mid_z - front };
 			Mesh::rectangle(topleft, right + left, front + back, 1.0f, 1.0f, height, false, false, vertices, indices);
+			area.addVolume(Volume(Area::fromTopleft(topleft, right + left, front + back), height));
 			if (tiers != 0)
 				Mesh::grid2D(glm::vec3{ topleft.x, float(height), topleft.z + (front + back) }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, left + right, front + back, roofVertices, roofIndices);
 			else
@@ -189,7 +192,7 @@ void Building::makeBlocky(const Area& area, int height, VertexIndexMap& map)
 	makeRoof(roofArea, Blocky, map);
 }
 
-void Building::makeClassical(const Area& area, int height, VertexIndexMap& map)
+void Building::makeClassical(Area& area, int height, VertexIndexMap& map)
 {
 	int xWidth = area.getXWidth();
 	int zWidth = area.getZWidth();
@@ -227,6 +230,7 @@ void Building::makeClassical(const Area& area, int height, VertexIndexMap& map)
 	// Construct the foundation
 	if (foundation + 1 < height){
 		Mesh::rectangle(origin, xWidth, zWidth, rectWidth, rectHeight, foundation, false, true, verticesLedge, indicesLedge);
+		area.addVolume(Volume(Area::fromTopleft(origin, xWidth, zWidth), foundation));
 		bottom += foundation;
 		origin.y = topleft.y + bottom;
 	}
@@ -237,6 +241,7 @@ void Building::makeClassical(const Area& area, int height, VertexIndexMap& map)
 			tier_height = height_left;
 		}
 		Mesh::rectangle(origin, xWidth, zWidth, rectWidth, rectHeight, tier_height, false, false, verticesWindow, indicesWindow);
+		area.addVolume(Volume(Area::fromTopleft(origin, xWidth, zWidth), tier_height));
 		num_tiers++;
 		bottom += tier_height;
 		origin.y = topleft.y + bottom;
@@ -245,6 +250,7 @@ void Building::makeClassical(const Area& area, int height, VertexIndexMap& map)
 			break;
 		}
 		Mesh::rectangle(origin, xWidth, zWidth, rectWidth, rectHeight, ledge_height, false, true, verticesLedge, indicesLedge);
+		area.addVolume(Volume(Area::fromTopleft(origin, xWidth, zWidth), ledge_height));
 		bottom += ledge_height;
 		origin.y = topleft.y + bottom;
 		if (bottom > height){
@@ -264,7 +270,7 @@ void Building::makeClassical(const Area& area, int height, VertexIndexMap& map)
 	makeRoof(Area::fromTopleft(origin, xWidth, zWidth), Classical, map);
 }
 
-void Building::makeTower(const Area& area, int height, VertexIndexMap& map)
+void Building::makeTower(Area& area, int height, VertexIndexMap& map)
 {
 	int xWidth = area.getXWidth();
 	int zWidth = area.getZWidth();
@@ -318,6 +324,7 @@ void Building::makeTower(const Area& area, int height, VertexIndexMap& map)
 		float angle = (isSimmetric ? 0.0f : angleStart);
 		angleStart += step;
 		std::vector<glm::vec3> pos(spans);
+		area.addVolume(Volume(Area(glm::vec3{ xCenter - xRadius, bottom, zCenter + zRadius}, 2 * xRadius, 2 * zRadius), tier_height));
 		for (std::size_t i = 0; i < spans; i++){
 			float xCoord = xRadius * glm::cos(angle) + xCenter;
 			float zCoord = zRadius * glm::sin(angle) + zCenter;
