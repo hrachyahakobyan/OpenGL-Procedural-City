@@ -21,7 +21,7 @@ private:
 	std::vector<std::vector<ModelPtr>> buildingGrids;
 
 	const World& world;
-	const int maxHeight = 50;
+	const int maxHeight = 70;
 
 	void fillArea(Area& area, VertexIndexMap& map);
 	void makeBuilding(Area& area, int height, VertexIndexMap& map);

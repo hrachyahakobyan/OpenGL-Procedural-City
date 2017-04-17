@@ -127,7 +127,7 @@ void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 	int half_xWidth = xWidth / 2;
 	int half_zWidth = zWidth / 2;
 	tiers = 0;
-	max_tiers = 1 + height / 5 + height / 10 + height / 20;
+	max_tiers = 1 + height / 4 + height / 8 + height / 16;
 
 	auto windowTexture = Textures::randomWindow();
 	auto windowTextureID = windowTexture->getResourceID();
@@ -184,10 +184,12 @@ void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 				float rootfZWidth = front + back;
 				roofArea = Area(glm::vec3{ topleft.x, roofHeight, topleft.z + rootfZWidth }, roofXWidth, rootfZWidth);
 			}
-			height -= Random::random(1, 5);
+			height -= Random::random(1, 3);
 			tiers++;
 		}
-		height--;
+		else {
+			height--;
+		}
 	}
 	makeRoof(roofArea, Blocky, map);
 }
@@ -199,7 +201,7 @@ void Building::makeClassical(Area& area, int height, VertexIndexMap& map)
 	if (xWidth < 2 || zWidth < 2)
 		return;
 	using namespace glutil;
-	int tier_frac = 2 + Random::random(0, 3);
+	int tier_frac = 4 + Random::random(0, 3);
 	int narrow_interval = 1 + Random::random(0, 1);
 	int foundation = 1 + Random::random(0, 1);
 	int ledge_height = 1;
@@ -277,11 +279,12 @@ void Building::makeTower(Area& area, int height, VertexIndexMap& map)
 	if (xWidth < 2 || zWidth < 2)
 		return;
 	using namespace glutil;
+	height += height / 4;
 	int spans = 3 + Random::random(0, 8);
 	float narrowScale = 0.2f;
-	int max_tiers = 1 + height / 5 + height / 10 + height / 20;
+	int max_tiers = 1 + height / 4 + height / 8 + height / 16;
 	int tiers = 0;
-	int tier_frac = 2 + Random::random(0, 3);
+	int tier_frac = 3 + Random::random(0, 2);
 	int height_left = height;
 	int tier_height = 0;
 	float minEllipseArea = glm::pi<float>() * 2.0;
@@ -348,6 +351,10 @@ void Building::makeTower(Area& area, int height, VertexIndexMap& map)
 		xRadius = xRadius - xRadius * narrowScale;
 		zRadius = zRadius - zRadius * narrowScale;
 		triangulatePolygon(pos, roofVertices, roofIndices, bottom);
+	}
+
+	if (height_left != 0){
+		int x = 100;
 	}
 }
 

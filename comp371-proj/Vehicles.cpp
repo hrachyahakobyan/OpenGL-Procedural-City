@@ -44,7 +44,7 @@ world(world)
 	modelArrays[2].initialAttrib = 3;
 	speeds = std::vector<float>{1.7f, 2.4f, 1.3f};
 	sign = std::vector<int>{1, 1, -1};
-	shader = glutil::Shader::fromFile("shaders/vertex_vehicle.txt", "shaders/fragment_vehicle.txt");
+	shader = glutil::Shader::fromFile("shaders/vertex_vehicle.txt", "shaders/fragment.txt");
 	shader->use();
 	GLint lightColorLoc = glGetUniformLocation(shader->getProgram(), "lightColor");
 	glUniform3f(lightColorLoc, world.getLightColor().x, world.getLightColor().y, world.getLightColor().z);

@@ -18,5 +18,6 @@ protected:
 	glm::mat4 view;
 	glm::mat4 proj;
 	World world;
+	bool enableFog = true;
 };
 

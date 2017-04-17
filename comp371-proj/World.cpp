@@ -26,7 +26,7 @@ void World::initialize(int worldWidth, int worldHeight)
 
 	this->worldWidth = worldWidth;
 	this->worldHeight = worldHeight;
-	this->maxHeight = 50;
+	this->maxHeight = 70;
 	ground = Ground::makeGround(glm::vec3{ 0.0f, -0.1f, 0.0f }, worldWidth, worldHeight);
 	std::vector<std::string> faces{
 		"right.jpg",
@@ -88,17 +88,16 @@ void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vec
 
 	std::vector<Area> subAreas;
 	glm::vec3 c = center();
+	int depth = 2;
 	float distMax = glm::distance(glm::vec3{ 0.0f, 0.0f, 0.0f }, c);
-	for (const auto area : areas){
-		float dist = glm::distance(area.getBottomleft(), c);
-		float prob = dist / distMax;
-		bool shouldDivide = Random::dice(prob);
-		if (shouldDivide)
-			area.subdivide(subAreas, 3, 3, 1);
-		else
-			subAreas.push_back(area);
+	while (depth-- > 0){
+		for (const auto area : areas){
+			float dist = glm::distance(area.getBottomleft(), c);
+			float prob = dist / distMax;
+			area.subdivide(subAreas, 6, 6, 1);
+		}
+		areas = std::move(subAreas);
 	}
-	areas = std::move(subAreas);
 }
 
 std::pair<std::size_t, std::size_t> World::areaCoordinate(const Area& a, std::size_t width, std::size_t height) const
@@ -119,7 +118,7 @@ void World::update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3
 	GLfloat currentFrame = static_cast<GLfloat>(glfwGetTime());
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-
+	
 	/*glm::mat4 rot = glm::rotate(glm::mat4(1.f), deltaTime / 2.0f, glm::vec3{ 0.0f, 0.0f, 1.0f });
 	lightDirection = rot * glm::vec4(lightDirection, 1.0f);
 	lightDirection = glm::normalize(lightDirection);
@@ -218,9 +217,6 @@ void World::initializeAreaGrid()
 								 areaBottom < partitionTop);
 				if (overlap){
 					areaGrid[i][j].push_back(&area);
-				}
-				else {
-					int x = 100;
 				}
 			}
 		}

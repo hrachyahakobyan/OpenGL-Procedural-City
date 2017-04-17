@@ -24,7 +24,7 @@ void Ground::makeStreets(const glm::vec3& bottomleft, int worldWidth, int worldH
 	float wHeight = float(worldHeight);
 	float wWidth = float(worldWidth);
 	while (left > 0){
-		int skip = 7 + Random::random(0, 7);
+		int skip = 15 + Random::random(0, 10);
 		if (left < skip)
 			break;
 		left -= skip;
@@ -40,7 +40,7 @@ void Ground::makeStreets(const glm::vec3& bottomleft, int worldWidth, int worldH
 		0, wHeight));
 	left = worldHeight;
 	while (left > 0){
-		int skip = 7 + Random::random(0, 7);
+		int skip = 15 + Random::random(0, 10);
 		if (left < skip)
 			break;
 		left -= skip;

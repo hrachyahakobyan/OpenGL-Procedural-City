@@ -16,11 +16,11 @@ Area::~Area()
 void Area::subdivide(std::vector<Area>& subAreas, int minXWidth, int minZWidth, int depth) const
 {
 	if (depth <= 0) return;
-	if (xWidth < 2 * minXWidth || zWidth < 2 * minZWidth) return;
+	if (xWidth < 2 * minXWidth || zWidth < 2 * minZWidth);
 	if (xWidth >= 2 * minXWidth){
 		std::vector<Area> temp;
 		divideAlongX(temp, minXWidth);
-		if (zWidth >= 2 * minZWidth){
+		if (zWidth >= 2 * minZWidth && Random::dice(0.75f)){
 			for (const auto a : temp){
 				a.divideAlongZ(subAreas, minZWidth);
 			}
@@ -32,7 +32,7 @@ void Area::subdivide(std::vector<Area>& subAreas, int minXWidth, int minZWidth, 
 	else if (zWidth >= 2 * minZWidth){
 		std::vector<Area> temp;
 		divideAlongZ(temp, minZWidth);
-		if (xWidth >= 2 * minXWidth){
+		if (xWidth >= 2 * minXWidth && Random::dice(0.75f)){
 			auto areas = std::move(subAreas);
 			for (const auto a : temp){
 				a.divideAlongX(subAreas, minXWidth);
@@ -44,9 +44,6 @@ void Area::subdivide(std::vector<Area>& subAreas, int minXWidth, int minZWidth, 
 	}
 	else {
 		subAreas.push_back(*this);
-	}
-	for (const auto a : subAreas){
-		a.subdivide(subAreas, minXWidth, minZWidth, --depth);
 	}
 }
 
