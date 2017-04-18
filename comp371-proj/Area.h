@@ -9,6 +9,8 @@ struct Area{
 	inline glm::vec3 getBottomleft() const { return bottomleft; }
 	inline glm::vec3 getCenter() const { return{ bottomleft.x + xWidth / 2, bottomleft.y, bottomleft.z - zWidth / 2 }; }
 	inline glm::vec3 getBottomRight() const { return glm::vec3{ bottomleft.x + xWidth, bottomleft.y, bottomleft.z }; }
+	inline glm::vec3 getTopRight() const {return glm::vec3{ bottomleft.x + xWidth, bottomleft.y, bottomleft.z - zWidth };
+}
 	inline int getXWidth() const { return xWidth; }
 	inline int getZWidth() const { return zWidth; }
 	inline void setBottomleft(const glm::vec3& bottomleft) { this->bottomleft = bottomleft; }

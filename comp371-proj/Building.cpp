@@ -11,7 +11,7 @@ world(world), buildingGrids(partitions, std::vector<ModelPtr>(partitions))
 	using namespace glutil;
 
 	std::vector<std::vector<VertexIndexMap>> vertexIndexMapGrid(partitions, std::vector<VertexIndexMap>(partitions));
-	int max = 100;
+	int max = 1;
 	for (auto& area : areas){
 		auto coord = world.areaCoordinate(area, partitions, partitions);
 		auto& currentMap = vertexIndexMapGrid[coord.second][coord.first];
@@ -88,20 +88,88 @@ void Building::makeCube(Area& area, int height, VertexIndexMap& map)
 	Mesh::rectangle(area.getTopleft(), area.getXWidth(), area.getZWidth(), 1.0f, 1.0f, height, false, false, vertices, indices);
 	glm::vec3 roofAreaTopleft = area.getTopleft();
 	roofAreaTopleft.y += height;
-	makeRoof(Area::fromTopleft(roofAreaTopleft, area.getXWidth(), area.getZWidth()), Cube, map);
+	makeRoof(Area::fromTopleft(roofAreaTopleft, area.getXWidth(), area.getZWidth()), Cube, map, area);
 }
 
-void Building::makeRoof(Area& area, BuildingType type, VertexIndexMap& map)
+void Building::makeRoof(const Area& area, BuildingType type, VertexIndexMap& map, Area& bldArea)
 {
 	using namespace glutil;
-	auto roofTexture = Textures::randomRoof();
-	auto roofTextureID = roofTexture->getResourceID();
-	auto& mapItemRef = map[roofTextureID];
-	std::get<2>(mapItemRef) = roofTexture;
-	std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
-	std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+	
 	glm::vec3 bottomLeft = area.getBottomleft();
-	Mesh::grid2D(bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, area.getXWidth(), area.getZWidth(), vertices, indices);
+	glm::vec3 topLeft = area.getTopleft();
+
+	if (type == Tower){
+		auto texture = Textures::randomRoof();
+		auto textureID = texture->getResourceID();
+		auto& mapItemRef = map[textureID];
+		std::get<2>(mapItemRef) = texture;
+		std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
+		std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+		Mesh::grid2D(bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, area.getXWidth(), area.getZWidth(), vertices, indices);
+	}
+	else {
+		bool skip = Random::dice(0.25f);
+		if (skip){
+			auto texture = Textures::randomRoof();
+			auto textureID = texture->getResourceID();
+			auto& mapItemRef = map[textureID];
+			std::get<2>(mapItemRef) = texture;
+			std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
+			std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+			Mesh::grid2D(bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, area.getXWidth(), area.getZWidth(), vertices, indices);
+			return;
+		}
+		bool makeRoof = Random::dice(0.5f);
+		if (area.getXWidth() < 6 || area.getZWidth() < 6)
+			makeRoof = true;
+		glm::vec3 bottomRight = area.getBottomRight();
+		glm::vec3 topRight = area.getTopRight();
+		if (makeRoof){
+			auto texture = (type == Classical ? Textures::randomDarkBrick() : Textures::randomRoofTile());
+			auto textureID = texture->getResourceID();
+			auto& mapItemRef = map[textureID];
+			std::get<2>(mapItemRef) = texture;
+			std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
+			std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+			std::vector<glm::vec3> points(4);
+			points[3] = topLeft;
+			points[2] = bottomLeft;
+			points[1] = bottomRight;
+			points[0] = topRight;
+			double roofingHeight = 1.0f;
+			if (type == Classical){
+				roofingHeight = double(Random::random(2.0f, 4.0f));
+			}
+			bldArea.addVolume(Volume(area, roofingHeight));
+			triangulatePolygon(points, vertices, indices, bottomLeft.y, roofingHeight);
+		}
+		else if (!makeRoof) {
+			auto texture = Textures::randomLightBrick();
+			auto textureID = texture->getResourceID();
+			auto& mapItemRef = map[textureID];
+			std::get<2>(mapItemRef) = texture;
+			std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
+			std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+			int cubeXWidth = Random::random(3, area.getXWidth() / 2);
+			int cubeZWidth = Random::random(3, area.getZWidth() / 2);
+			int cubeTopleftX = Random::random(topLeft.x, topRight.x - cubeXWidth);
+			int cubeTopleftZ = topLeft.z + Random::random(0, area.getZWidth() - cubeZWidth);
+			int cubeHeight = Random::random(1, 2);
+			glm::vec3 topleft{ cubeTopleftX, topLeft.y, cubeTopleftZ };
+			Mesh::rectangle(topleft, cubeXWidth, cubeZWidth, 1.0f, 1.0f, cubeHeight, false, true, vertices, indices);
+			bldArea.addVolume(Volume(Area::fromTopleft(topleft, cubeXWidth, cubeZWidth), cubeHeight));
+			{
+				auto texture = Textures::randomRoof();
+				auto textureID = texture->getResourceID();
+				auto& mapItemRef = map[textureID];
+				std::get<2>(mapItemRef) = texture;
+				std::vector<Vertex>& vertices = std::get<0>(mapItemRef);
+				std::vector<GLuint>& indices = std::get<1>(mapItemRef);
+				Mesh::grid2D(bottomLeft, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, area.getXWidth(), area.getZWidth(), vertices, indices);
+
+			}
+		}
+	}
 }
 
 void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
@@ -131,7 +199,7 @@ void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 
 	auto windowTexture = Textures::randomWindow();
 	auto windowTextureID = windowTexture->getResourceID();
-	auto facadeTexture = Textures::randomFacade();
+	auto facadeTexture = Textures::randomRoof();
 	auto facadeTextureID = facadeTexture->getResourceID();
 
 	auto& windowItemRef = map[windowTextureID];
@@ -191,7 +259,7 @@ void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 			height--;
 		}
 	}
-	makeRoof(roofArea, Blocky, map);
+	makeRoof(roofArea, Blocky, map, area);
 }
 
 void Building::makeClassical(Area& area, int height, VertexIndexMap& map)
@@ -269,7 +337,7 @@ void Building::makeClassical(Area& area, int height, VertexIndexMap& map)
 			}
 		}
 	}
-	makeRoof(Area::fromTopleft(origin, xWidth, zWidth), Classical, map);
+	makeRoof(Area::fromTopleft(origin, xWidth, zWidth), Classical, map, area);
 }
 
 void Building::makeTower(Area& area, int height, VertexIndexMap& map)
@@ -301,7 +369,7 @@ void Building::makeTower(Area& area, int height, VertexIndexMap& map)
 
 	auto windowTexture = Textures::randomWindow();
 	auto windowTextureID = windowTexture->getResourceID();
-	auto facadeTexture = Textures::randomFacade();
+	auto facadeTexture = Textures::randomRoof();
 	auto facadeTextureID = facadeTexture->getResourceID();
 
 	auto& windowItemRef = map[windowTextureID];
@@ -359,7 +427,7 @@ void Building::makeTower(Area& area, int height, VertexIndexMap& map)
 }
 
 // Assuming the polygon is in the counterclockwise direction
-void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height)
+void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height, float centroidHeightOffset)
 {
 	if (points.size() < 3) return;
 	using namespace glutil;
@@ -373,6 +441,7 @@ void Building::triangulatePolygon(const std::vector<glm::vec3>& points, std::vec
 		xTex = 1 - xTex;
 	}
 	centroid /= (points.size());
+	centroid.y += centroidHeightOffset;
 	vertices.push_back(Vertex(centroid, glm::vec3{ 0.0f, 1.0f, 0.0f }, glm::vec2{ 0.5f, 1.0f }));
 	int indexCounter = 0;
 	GLuint last = points.size();

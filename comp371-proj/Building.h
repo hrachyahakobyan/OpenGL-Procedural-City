@@ -27,12 +27,12 @@ private:
 	void makeBuilding(Area& area, int height, VertexIndexMap& map);
 	void makeCube(Area& area, int height, VertexIndexMap& map);
 	void makeBlocky(Area& area, int height, VertexIndexMap& map);
-	void makeRoof(Area& area, BuildingType type, VertexIndexMap& map);
+	void makeRoof(const Area& area, BuildingType type, VertexIndexMap& map, Area& bldArea);
 	void makeClassical(Area& area, int height, VertexIndexMap& map);
 	void makeTower(Area& area, int height, VertexIndexMap& map);
 
 	int calculateHeightForArea(const Area& area) const;
 	float calculateHeightCoefficientForDistance(float dist) const;
-	void triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height);
+	void triangulatePolygon(const std::vector<glm::vec3>& points, std::vector<glutil::Vertex>& vertices, std::vector<GLuint>& indices, float height, float centroidHeightOffset = 0.0f);
 };
 

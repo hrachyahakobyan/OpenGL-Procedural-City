@@ -13,10 +13,10 @@ uniform vec3 lightColor;
 uniform vec3 viewPos;
 
 const vec3 fogColor = vec3(0.5, 0.5,0.5);
-const float FogDensity = 0.025;
 
 void main()
 {   
+    float FogDensity = 0.025f * lightColor.x;
     vec4 objectColor = vec4(texture(texture_diffuse1, TexCoords));  
 
     float ambientStrength = 0.3f;

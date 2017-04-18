@@ -16,7 +16,6 @@ Area::~Area()
 void Area::subdivide(std::vector<Area>& subAreas, int minXWidth, int minZWidth, int depth) const
 {
 	if (depth <= 0) return;
-	if (xWidth < 2 * minXWidth || zWidth < 2 * minZWidth);
 	if (xWidth >= 2 * minXWidth){
 		std::vector<Area> temp;
 		divideAlongX(temp, minXWidth);

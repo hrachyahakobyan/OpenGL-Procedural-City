@@ -13,7 +13,7 @@ public:
 	void initialize(int worldWidth, int worldHeight);
 	void update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& viewPos);
 	void draw();
-
+	inline glm::vec3 getBackgroundColor() const { return lightColor; }
 	inline const glm::mat4& getView() const { return view; }
 	inline const glm::mat4& getProj() const { return proj; }
 	inline const glm::vec3& getViewPos() const { return viewPos; }

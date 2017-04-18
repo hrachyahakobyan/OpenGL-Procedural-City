@@ -23,7 +23,7 @@ void TestApp::initialize()
 	glFrontFace(GL_CCW);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	backgroundColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	backgroundColor = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 
 	camera.reset(new glutil::Camera(glm::vec3(0.0f, 50.f, 3.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
@@ -42,6 +42,7 @@ void TestApp::updateData()
 	proj = glm::perspective(camera->getZoom(), (GLfloat)windowHandler->getWindowWidth() / (GLfloat)windowHandler->getWindowHeight(), 0.1f, 100.0f);
 	// Get the uniform locations
 	world.update(view, proj, camera->getPosition());
+	this->backgroundColor = glm::vec4(world.getBackgroundColor(), 1.0f);
 }
 
 void TestApp::render()

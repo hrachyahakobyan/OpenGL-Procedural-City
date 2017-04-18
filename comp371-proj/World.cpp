@@ -19,7 +19,6 @@ void World::initialize(int worldWidth, int worldHeight)
 	bldShader->use();
 	lightPos = glm::vec3{0.0f, 50.0f, 0.0f };
 	lightDirection = glm::normalize(glm::vec3{5.0f, -0.5f, 0.0f });
-
 	GLint lightColorLoc = glGetUniformLocation(bldShader->getProgram(), "lightColor");
 	lightColor = glm::vec3{ 1.0f, 1.0f, 1.0f };
 	glUniform3f(lightColorLoc, lightColor.x, lightColor.y, lightColor.z);
@@ -36,7 +35,7 @@ void World::initialize(int worldWidth, int worldHeight)
 		"back.jpg",
 		"front.jpg"
 	};
-	skybox = glutil::Skybox::make("textures\\skybox", faces);
+	skybox = glutil::Skybox::make("textures\\city1", faces);
 	makeStreets();
 	makeAreas(vStreets, hStreets);
 	initializeAreaGrid();
@@ -119,11 +118,11 @@ void World::update(const glm::mat4& view, const glm::mat4& proj, const glm::vec3
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 	
-	/*glm::mat4 rot = glm::rotate(glm::mat4(1.f), deltaTime / 2.0f, glm::vec3{ 0.0f, 0.0f, 1.0f });
+	glm::mat4 rot = glm::rotate(glm::mat4(1.f), deltaTime / 2.0f, glm::vec3{ 0.0f, 0.0f, 1.0f });
 	lightDirection = rot * glm::vec4(lightDirection, 1.0f);
 	lightDirection = glm::normalize(lightDirection);
 	float dot = glm::dot(-lightDirection, glm::vec3{ 0.0f, 1.0f, 0.0 });
-	lightColor = glm::vec3(std::max(dot, 0.1f));*/
+	lightColor = glm::vec3(std::max(dot, 0.1f));
 
 	this->view = view;
 	this->proj = proj;
@@ -160,7 +159,7 @@ void World::draw()
 		buildings->draw();
 	}
 	if (skybox){
-		skybox->draw(view, proj);
+		//skybox->draw(view, proj);
 	}
 	if (sidewalks){
 		sidewalks->draw();
