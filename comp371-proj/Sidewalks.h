@@ -3,6 +3,10 @@
 
 class World;
 
+/**
+*	@brief Handles the creation of sidewalks and all models contained on them
+*	@author Hrachya Hakobyan
+*/
 class Sidewalks
 {
 public:

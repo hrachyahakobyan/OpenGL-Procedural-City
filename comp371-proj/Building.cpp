@@ -11,7 +11,7 @@ world(world), buildingGrids(partitions, std::vector<ModelPtr>(partitions))
 	using namespace glutil;
 
 	std::vector<std::vector<VertexIndexMap>> vertexIndexMapGrid(partitions, std::vector<VertexIndexMap>(partitions));
-	int max = 1;
+	int max = 500;
 	for (auto& area : areas){
 		auto coord = world.areaCoordinate(area, partitions, partitions);
 		auto& currentMap = vertexIndexMapGrid[coord.second][coord.first];
@@ -213,7 +213,7 @@ void Building::makeBlocky(Area& area, int height, VertexIndexMap& map)
 	std::vector<GLuint>& roofIndices = std::get<1>(facadeItemref);
 
 	Mesh::rectangle(topleft, xWidth, zWidth, 1.0f, 1.0f, foundation, false, false, vertices, indices);
-	area.addVolume(Volume(area, 1.0f));
+	area.addVolume(Volume(area, foundation));
 	Mesh::grid2D(glm::vec3{ topleft.x, foundation, topleft.z + zWidth }, glm::vec3{ 1.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -1.0f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, xWidth, zWidth, roofVertices, roofIndices);
 	height -= foundation;
 

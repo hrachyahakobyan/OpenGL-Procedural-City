@@ -1,4 +1,8 @@
 #pragma once
+/**
+*	@brief class handles loading of different textures used in the project
+*	@author Hrachya Hakobyamn
+*/
 class Textures
 {
 public:

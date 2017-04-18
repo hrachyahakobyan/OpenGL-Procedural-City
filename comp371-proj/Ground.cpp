@@ -8,7 +8,7 @@ std::shared_ptr<glutil::Model> Ground::makeGround(const glm::vec3& bottomleft, i
 	using namespace glutil;
 	std::vector<Vertex> vertices;
 	std::vector<GLuint> indices;
-	Mesh::grid2D(glm::vec3{ -100.f, -0.1f, 100.f }, glm::vec3{ 50.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -50.f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, 500.f, 500.f, vertices, indices);
+	Mesh::grid2D(glm::vec3{ -width / 2, -0.15f, height / 2 }, glm::vec3{ 50.0f, 0.0f, 0.0f }, glm::vec3{ 0.0f, 0.0f, -50.f }, glm::vec3{ 0.0f, 1.0f, 0.0f }, 2 * width, 2 * height, vertices, indices);
 	std::vector<Mesh> meshes;
 	meshes.push_back(Mesh(std::move(vertices), std::move(indices)));
 	meshes.back().addTexture(Texture::fromFile("textures\\road1.jpg", GL_TEXTURE_2D, Diffusive));

@@ -6,7 +6,7 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	TestApp app("TEST");
+	TestApp app("World");
 	app.initialize();
 	app.run();
 	return 0;

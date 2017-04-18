@@ -3,6 +3,10 @@
 
 class World;
 
+/**
+*	@brief class Handles the creation, movement and rendering of vehicle objects in the world
+*	@author Hrachya Hakobyan
+*/
 class Vehicles
 {
 public:

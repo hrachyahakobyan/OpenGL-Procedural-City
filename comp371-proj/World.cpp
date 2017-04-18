@@ -15,6 +15,7 @@ World::~World()
 
 void World::initialize(int worldWidth, int worldHeight)
 {
+	fogColor = glm::vec3{ 0.5f, 0.5f, 0.5f };
 	bldShader = glutil::Shader::fromFile("shaders/vertex.txt", "shaders/fragment.txt");
 	bldShader->use();
 	lightPos = glm::vec3{0.0f, 50.0f, 0.0f };
@@ -35,7 +36,7 @@ void World::initialize(int worldWidth, int worldHeight)
 		"back.jpg",
 		"front.jpg"
 	};
-	skybox = glutil::Skybox::make("textures\\city1", faces);
+	//skybox = glutil::Skybox::make("textures\\skybox", faces);
 	makeStreets();
 	makeAreas(vStreets, hStreets);
 	initializeAreaGrid();
@@ -93,7 +94,7 @@ void World::makeAreas(const std::vector<Street>& verticalStreets, const std::vec
 		for (const auto area : areas){
 			float dist = glm::distance(area.getBottomleft(), c);
 			float prob = dist / distMax;
-			area.subdivide(subAreas, 6, 6, 1);
+			area.subdivide(subAreas, 6, 6);
 		}
 		areas = std::move(subAreas);
 	}

@@ -34,7 +34,11 @@ StdAfx.h, StdAfx.cpp
 /////////////////////////////////////////////////////////////////////////////
 Other notes:
 
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
+The initialization can take a while depending on the machine, may take up to a minute.
+Use T, L, P to switch between triangle, line and point rendering modes.
+
+Use WASD to move the camera. Hold mouse right button and move the mouse to rotate the 
+camera.
 
 /////////////////////////////////////////////////////////////////////////////
+

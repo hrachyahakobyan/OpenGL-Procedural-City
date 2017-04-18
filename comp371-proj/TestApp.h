@@ -1,6 +1,10 @@
 #pragma once
 #include "World.h"
 
+/**
+*	@brief the application class of the project
+*	@author Hrachya Hakobyan
+*/
 class TestApp : public glutil::ApplicationBase
 {
 public:
