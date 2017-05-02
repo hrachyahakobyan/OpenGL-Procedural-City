@@ -1,0 +1,4 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classglutil_1_1_camera_base.html" title="Base template class for Camera. Incorporates basic logic for FPS style movement. " alt="" coords="5,5,137,32"/>
+<area shape="rect" id="node2" href="$classglutil_1_1_camera.html" title="Camera with possibility to rotate. Uses Euler angles to process rotation. " alt="" coords="185,5,288,32"/>
+</map>

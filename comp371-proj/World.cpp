@@ -36,7 +36,7 @@ void World::initialize(int worldWidth, int worldHeight)
 		"back.jpg",
 		"front.jpg"
 	};
-	//skybox = glutil::Skybox::make("textures\\skybox", faces);
+	skybox = glutil::Skybox::make("textures\\skybox", faces);
 	makeStreets();
 	makeAreas(vStreets, hStreets);
 	initializeAreaGrid();
